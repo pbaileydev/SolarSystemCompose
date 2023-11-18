@@ -23,6 +23,12 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
@@ -30,8 +36,7 @@ import com.google.gson.Gson
 import com.pbailey.network.Planet
 import com.pbailey.network.PlanetaryResponseList
 import com.pbailey.solarsystem.PlanetDetailsActivity
-import com.pbailey.solarsystem.ui.theme.SolarSystemTheme
-import com.pbailey.solarsystem.ui.theme.SolarViewModel
+import com.pbailey.solarsystem.ui.theme.*
 
 class MainActivity : ComponentActivity(), SolarViewModel.PlanetListInterface {
     lateinit var solarViewModel: SolarViewModel
@@ -40,18 +45,32 @@ class MainActivity : ComponentActivity(), SolarViewModel.PlanetListInterface {
         super.onCreate(savedInstanceState)
         solarViewModel = ViewModelProvider(this).get(SolarViewModel::class.java)
         solarViewModel.setPlanetInterface(this)
+        val valoraxFamily = FontFamily(
+            Font(R.font.valorax_font_family, FontWeight.Normal),
+        )
         setContent {
             SolarSystemTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
+                Scaffold(
 
-                    solarViewModel.getPlanetData()
-                    var planetState = solarViewModel.planetState?.observeAsState(null)
-                    MainScreen(planetList = planetState?.value,mContext)
+                    topBar = {
+                        TopAppBar(title = {Text(text="Project Cassini", fontFamily = valoraxFamily)} ,
+                            modifier = Modifier.background(PurpleBackground))
+                    }
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .padding(it)
+                            .fillMaxSize(),
+                        color = MaterialTheme.colors.background
+                    ) {
+
+                        solarViewModel.getPlanetData()
+                        var planetState = solarViewModel.planetState?.observeAsState(null)
+                        MainScreen(planetList = planetState?.value,mContext)
+                    }
                 }
+                // A surface container using the 'background' color from the theme
+
             }
         }
     }
@@ -72,7 +91,7 @@ fun MainScreen(planetList:PlanetaryResponseList?,context: Context){
         if(planetList.bodies!=null) {
             Column(modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black)
+                .background(Lilac)
                 .verticalScroll(rememberScrollState())) {
                 for (item in planetList.bodies!!) {
                     PlanetRow(planet = item){
@@ -101,8 +120,9 @@ fun PlanetRow(planet: Planet, navigateToPlanet:()->Unit){
             modifier = Modifier
                 .fillMaxWidth()
                 .height(80.dp)
-                .background(Color.Gray),
-            horizontalArrangement = Arrangement.SpaceBetween
+                .background(LightPurple),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             var imageId = -1
             if(planet.name.equals("Mercury")){
@@ -137,9 +157,14 @@ fun PlanetRow(planet: Planet, navigateToPlanet:()->Unit){
                         , contentScale = ContentScale.Crop)
 
             }
-
-            Text(text = planet.name, style = MaterialTheme.typography.h2, color = Color.Black,
-            modifier = Modifier.fillMaxWidth())
+            val valoraxFamily = FontFamily(
+                Font(R.font.valorax_font_family, FontWeight.Normal),
+            )
+            Text(text = planet.name, style = MaterialTheme.typography.h4
+                , fontFamily = valoraxFamily,color = MainTextColor,
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight())
 
         }
     }
