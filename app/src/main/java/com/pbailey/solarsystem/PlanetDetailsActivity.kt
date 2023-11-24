@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
@@ -26,10 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.gson.Gson
 import com.pbailey.network.Planet
-import com.pbailey.solarsystem.ui.theme.LightPurple
-import com.pbailey.solarsystem.ui.theme.Lilac
-import com.pbailey.solarsystem.ui.theme.MainTextColor
-import com.pbailey.solarsystem.ui.theme.PurpleBackground
+import com.pbailey.solarsystem.ui.theme.*
 import com.pbailey.solarsystem.ui.theme.ui.theme.SolarSystemTheme
 
 class PlanetDetailsActivity : ComponentActivity() {
@@ -41,11 +39,23 @@ class PlanetDetailsActivity : ComponentActivity() {
                 Font(R.font.valorax_font_family, FontWeight.Normal),
             )
             SolarSystemTheme {
+                val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+                val scope = rememberCoroutineScope()
+                ModalDrawer(drawerContent ={
+                    Column(){
+                        Row(modifier = Modifier.background(PlumbColor).height(48.dp)){
+                            Text(color = MainTextColor, text = "Project Cassini")
+
+                        }
+                    }
+                } ) {
+
+                }
                 Scaffold(
 
                     topBar = {
                         TopAppBar(title = {Text(text="Planet Profile", fontFamily = valoraxFamily)} ,
-                            modifier = Modifier.background(PurpleBackground), navigationIcon = {
+                            backgroundColor = BackgroundColor, contentColor = MainTextColor, navigationIcon = {
                                 IconButton(onClick = { onBackPressed() }) {
                                     Icon(
                                         painter = painterResource(id = R.drawable.baseline_arrow_back_ios_24),
@@ -75,7 +85,7 @@ class PlanetDetailsActivity : ComponentActivity() {
 fun Background(data:String) {
     Column(modifier = Modifier
         .fillMaxSize()
-        .background(Lilac)) {
+        .background(BackgroundColor)) {
         PlanetCard(data)
     }
 }
@@ -87,7 +97,7 @@ fun PlanetCard(data:String){
         .padding(16.dp)
         .fillMaxHeight()) {
         Column(modifier = Modifier
-            .background(LightPurple)
+            .background(ItemColor)
             .fillMaxHeight()
             .verticalScroll(rememberScrollState())) {
             var imageId = -1

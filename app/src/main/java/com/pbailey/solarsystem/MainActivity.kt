@@ -1,27 +1,30 @@
 package com.pbailey.solarsystem
 
+import android.content.ClipData.Item
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
@@ -37,6 +40,10 @@ import com.pbailey.network.Planet
 import com.pbailey.network.PlanetaryResponseList
 import com.pbailey.solarsystem.PlanetDetailsActivity
 import com.pbailey.solarsystem.ui.theme.*
+import com.pbailey.solarsystem.ui.theme.components.CassiniChip
+import com.pbailey.solarsystem.ui.theme.components.ValoraxText
+import com.pbailey.solarsystem.utilities.valoraxFamily
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity(), SolarViewModel.PlanetListInterface {
     lateinit var solarViewModel: SolarViewModel
@@ -45,32 +52,106 @@ class MainActivity : ComponentActivity(), SolarViewModel.PlanetListInterface {
         super.onCreate(savedInstanceState)
         solarViewModel = ViewModelProvider(this).get(SolarViewModel::class.java)
         solarViewModel.setPlanetInterface(this)
-        val valoraxFamily = FontFamily(
-            Font(R.font.valorax_font_family, FontWeight.Normal),
-        )
         setContent {
             SolarSystemTheme {
-                Scaffold(
+                val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+                val scope = rememberCoroutineScope()
+                ModalDrawer(drawerState = drawerState,drawerContent ={
+                    //https://www.freepik.com/free-vector/flying-satellite-with-antenna-space-cartoon-icon-illustration_13309438.htm#query=satellite&position=2&from_view=search&track=sph&uuid=d91e119c-1440-4f26-a431-3297fb57ca12
+                    Column(modifier = Modifier
+                        .fillMaxSize()
+                        .background(BackgroundColor)) {
+                            Row(
+                                modifier = Modifier
+                                    .background(OrangeAccentColor)
+                                    .height(80.dp)
+                                    .fillMaxWidth()
+                            ) {
+                                ValoraxText(
+                                    text = "Project Cassini",
+                                    modifier = Modifier.padding(start=16.dp,top=32.dp)
+                                )
 
-                    topBar = {
-                        TopAppBar(title = {Text(text="Project Cassini", fontFamily = valoraxFamily)} ,
-                            modifier = Modifier.background(PurpleBackground))
+                            }
+                        Spacer(modifier = Modifier
+                            .background(LightPurpleColor)
+                            .fillMaxWidth()
+                            .height(1.dp))
+                        Row(
+                            modifier = Modifier
+                                .height(64.dp)
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            ValoraxText(
+                                text = "Settings",modifier = Modifier.padding(start=16.dp)
+                            )
+
+                        }
+                        Spacer(modifier = Modifier
+                            .background(LightPurpleColor)
+                            .fillMaxWidth()
+                            .height(1.dp))
+                        Row(
+                            modifier = Modifier
+                                .height(64.dp)
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            ValoraxText(
+                                text = "More", modifier = Modifier.padding(start=16.dp)
+                            )
+
+                        }
+                        Spacer(modifier = Modifier
+                            .background(LightPurpleColor)
+                            .fillMaxWidth()
+                            .height(1.dp))
+
                     }
-                ) {
-                    Surface(
-                        modifier = Modifier
-                            .padding(it)
-                            .fillMaxSize(),
-                        color = MaterialTheme.colors.background
+                } ) {
+
+
+                    Scaffold(
+
+                        topBar = {
+                            TopAppBar(title = {
+                                ValoraxText(text = "Project Cassini")
+                            },
+                                backgroundColor = BackgroundColor,
+                                contentColor = MainTextColor,
+                                elevation = 0.dp,
+                            navigationIcon = {
+                                IconButton(onClick = {scope.launch {
+                                    drawerState.apply {
+                                        if (isClosed)
+                                            open()
+                                        else
+                                            close()
+                                    }
+                                }}) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.baseline_menu_24),
+                                        contentDescription = "Back Arrow"
+                                    )
+                                }
+                            })
+                        },
                     ) {
+                        Surface(
+                            modifier = Modifier
+                                .padding(it)
+                                .fillMaxSize(),
+                            color = BackgroundColor
+                        ) {
 
-                        solarViewModel.getPlanetData()
-                        var planetState = solarViewModel.planetState?.observeAsState(null)
-                        MainScreen(planetList = planetState?.value,mContext)
+                            solarViewModel.getPlanetData()
+                            var planetState = solarViewModel.planetState?.observeAsState(null)
+                            MainScreen(planetList = planetState?.value, mContext)
+                        }
                     }
+                    // A surface container using the 'background' color from the theme
                 }
-                // A surface container using the 'background' color from the theme
-
             }
         }
     }
@@ -91,21 +172,54 @@ fun MainScreen(planetList:PlanetaryResponseList?,context: Context){
         if(planetList.bodies!=null) {
             Column(modifier = Modifier
                 .fillMaxSize()
-                .background(Lilac)
-                .verticalScroll(rememberScrollState())) {
-                for (item in planetList.bodies!!) {
-                    PlanetRow(planet = item){
-                        var intent = Intent(context, PlanetDetailsActivity::class.java)
-                        var bundle:Bundle = Bundle()
-                        bundle.putString("PLANET_INFO",Gson().toJson(item))
-                        intent.putExtra("DATA",bundle)
-                        context.startActivity(intent)
+                 ) {
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(), horizontalArrangement = Arrangement.SpaceEvenly){
+                    CassiniChip(text = "Planets", painterResource(id = R.drawable.planet_2_svgrepo_com))
+                    CassiniChip(text = "Moons", painterResource(id = R.drawable.moon_svgrepo_com))
+                    CassiniChip(text = "Satellites", painterResource(id = R.drawable.satellite_svgrepo_com))
+                }
+                Card(shape = RoundedCornerShape(12.dp),modifier = Modifier
+                    .padding(10.dp)
+                    .wrapContentSize(),
+                    elevation = 0.dp
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                BackgroundColor
+                            )
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        for (item in planetList.bodies!!) {
+                            PlanetRow(planet = item) {
+                                var intent = Intent(context, PlanetDetailsActivity::class.java)
+                                var bundle: Bundle = Bundle()
+                                bundle.putString("PLANET_INFO", Gson().toJson(item))
+                                intent.putExtra("DATA", bundle)
+                                context.startActivity(intent)
+                            }
+                            Spacer(modifier= Modifier
+                                .fillMaxWidth()
+                                .height(1.dp)
+                                .background(BackgroundColor))
+                        }
                     }
                 }
             }
+
         }
     }
 
+}
+
+@Composable fun MenuItem(text:String){
+    Row(modifier = Modifier.height(40.dp)){
+        ValoraxText(text = text)
+        
+    }
 }
 @Composable
 fun Greeting(name: String) {
@@ -115,14 +229,14 @@ fun Greeting(name: String) {
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PlanetRow(planet: Planet, navigateToPlanet:()->Unit){
-    Card(shape = RoundedCornerShape(8.dp), modifier = Modifier.padding(8.dp), onClick = navigateToPlanet) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(80.dp)
-                .background(LightPurple),
+                .background(ItemColor)
+                .clickable(onClick = navigateToPlanet),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             var imageId = -1
             if(planet.name.equals("Mercury")){
@@ -157,17 +271,12 @@ fun PlanetRow(planet: Planet, navigateToPlanet:()->Unit){
                         , contentScale = ContentScale.Crop)
 
             }
-            val valoraxFamily = FontFamily(
-                Font(R.font.valorax_font_family, FontWeight.Normal),
-            )
-            Text(text = planet.name, style = MaterialTheme.typography.h4
-                , fontFamily = valoraxFamily,color = MainTextColor,
-            modifier = Modifier
+            
+            ValoraxText(text = planet.name, style = MaterialTheme.typography.h4, modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight())
 
         }
-    }
 }
 
 @Preview(showBackground = true)

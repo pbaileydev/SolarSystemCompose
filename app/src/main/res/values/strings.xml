@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">SolarSystem</string>
     <string name="title_activity_planet_details">PlanetDetailsActivity</string>
+    <string name="title_activity_cassini_splash">CassiniSplash</string>
 </resources>
