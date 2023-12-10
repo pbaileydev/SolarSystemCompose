@@ -2,4 +2,6 @@
     <string name="app_name">SolarSystem</string>
     <string name="title_activity_planet_details">PlanetDetailsActivity</string>
     <string name="title_activity_cassini_splash">CassiniSplash</string>
+    <string name="title_activity_ar">ArActivity</string>
+    <string name="title_activity_credits">CreditsActivity</string>
 </resources>
