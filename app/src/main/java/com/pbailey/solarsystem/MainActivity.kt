@@ -107,6 +107,22 @@ class MainActivity : ComponentActivity(), SolarViewModel.PlanetListInterface {
                             .background(LightPurpleColor)
                             .fillMaxWidth()
                             .height(1.dp))
+                        Row(
+                            modifier = Modifier
+                                .height(64.dp)
+                                .fillMaxWidth()
+                                .clickable(onClick = { showCredits() }),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            ValoraxText(
+                                text = "Credits", modifier = Modifier.padding(start=16.dp)
+                            )
+
+                        }
+                        Spacer(modifier = Modifier
+                            .background(LightPurpleColor)
+                            .fillMaxWidth()
+                            .height(1.dp))
 
                     }
                 } ) {
@@ -154,6 +170,12 @@ class MainActivity : ComponentActivity(), SolarViewModel.PlanetListInterface {
                 }
             }
         }
+    }
+
+    private fun showCredits() {
+        val intent = Intent(this@MainActivity,CreditsActivity::class.java)
+        startActivity(intent)
+
     }
 
     override fun showPlanets(list: PlanetaryResponseList) {

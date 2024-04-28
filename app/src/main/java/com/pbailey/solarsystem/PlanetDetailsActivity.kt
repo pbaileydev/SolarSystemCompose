@@ -1,22 +1,22 @@
 package com.pbailey.solarsystem
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
@@ -25,12 +25,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import com.google.gson.Gson
 import com.pbailey.network.Planet
 import com.pbailey.solarsystem.ui.theme.*
-import com.pbailey.solarsystem.ui.theme.ui.theme.SolarSystemTheme
+import java.io.File
+
 
 class PlanetDetailsActivity : ComponentActivity() {
+    var mContext: Context = this@PlanetDetailsActivity
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +46,9 @@ class PlanetDetailsActivity : ComponentActivity() {
                 val scope = rememberCoroutineScope()
                 ModalDrawer(drawerContent ={
                     Column(){
-                        Row(modifier = Modifier.background(PlumbColor).height(48.dp)){
+                        Row(modifier = Modifier
+                            .background(PlumbColor)
+                            .height(48.dp)){
                             Text(color = MainTextColor, text = "Project Cassini")
 
                         }
@@ -73,7 +78,7 @@ class PlanetDetailsActivity : ComponentActivity() {
                     color = MaterialTheme.colors.background
                 ) {
 
-                    Background(data = intent.getBundleExtra("DATA")!!.getString("PLANET_INFO")!!)
+                    Background(data = intent.getBundleExtra("DATA")!!.getString("PLANET_INFO")!!,mContext)
                 }
                     }
             }
@@ -82,16 +87,16 @@ class PlanetDetailsActivity : ComponentActivity() {
 }
 
 @Composable
-fun Background(data:String) {
+fun Background(data:String,context:Context) {
     Column(modifier = Modifier
         .fillMaxSize()
         .background(BackgroundColor)) {
-        PlanetCard(data)
+        PlanetCard(data,context)
     }
 }
 
 @Composable
-fun PlanetCard(data:String){
+fun PlanetCard(data:String,context:Context){
     val planet = Gson().fromJson(data,Planet::class.java)
     Card(shape = RoundedCornerShape(16.dp), modifier = Modifier
         .padding(16.dp)
@@ -101,38 +106,49 @@ fun PlanetCard(data:String){
             .fillMaxHeight()
             .verticalScroll(rememberScrollState())) {
             var imageId = -1
-            if(planet.name.equals("Mercury")){
+            if (planet.name.equals("Mercury")) {
                 imageId = R.drawable.mercury
-            }
-            else if(planet.name.equals("Venus")){
+            } else if (planet.name.equals("Venus")) {
                 imageId = R.drawable.venus
-            }
-            else if(planet.name.equals("Earth")){
+            } else if (planet.name.equals("Earth")) {
                 imageId = R.drawable.earth
-            }
-            else if(planet.name.equals("Mars")){
+            } else if (planet.name.equals("Mars")) {
                 imageId = R.drawable.mars
-            }
-            else if(planet.name.equals("Jupiter")){
+            } else if (planet.name.equals("Jupiter")) {
                 imageId = R.drawable.jupiter
-            }
-            else if(planet.name.equals("Saturn")){
+            } else if (planet.name.equals("Saturn")) {
                 imageId = R.drawable.saturn
-            }
-            else if(planet.name.equals("Uranus")){
+            } else if (planet.name.equals("Uranus")) {
                 imageId = R.drawable.uranus
-            }
-            else if(planet.name.equals("Neptune")){
+            } else if (planet.name.equals("Neptune")) {
                 imageId = R.drawable.neptune
             }
             val valoraxFamily = FontFamily(
                 Font(R.font.valorax_font_family, FontWeight.Normal),
             )
-            Image(bitmap = ImageBitmap.imageResource(id = imageId), contentDescription = planet.name,
+            Box( modifier = Modifier
+                .fillMaxWidth()
+                .height(312.dp)) {
+            Image(
+                bitmap = ImageBitmap.imageResource(id = imageId), contentDescription = planet.name,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(312.dp)
-                , contentScale = ContentScale.FillBounds)
+                    .height(312.dp), contentScale = ContentScale.FillBounds
+            )
+                Card(shape = RoundedCornerShape(12.dp), modifier = Modifier.width(72.dp).height(72.dp)
+                    .align(Alignment.BottomEnd).padding(8.dp)) {
+                    Image(
+                        painter = painterResource(id = R.drawable.augmented_reality_svgrepo_com),
+                        contentDescription = "View with AR",
+                        colorFilter = ColorFilter.tint(MainTextColor),
+                        modifier = Modifier.width(56.dp).height(56.dp).background(OrangeAccentColor).clickable {
+                            val sceneViewerIntent = Intent(context, ArActivity::class.java)
+                            sceneViewerIntent.putExtra("DATA", planet.name)
+                            context.startActivity(sceneViewerIntent)
+                        }
+                    )
+                }
+        }
             Text(text=planet.name, modifier = Modifier
                 .wrapContentHeight()
                 .fillMaxWidth()
