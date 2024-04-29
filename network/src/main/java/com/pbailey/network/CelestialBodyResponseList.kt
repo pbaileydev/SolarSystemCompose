@@ -2,7 +2,7 @@ package com.pbailey.network
 
 import com.google.gson.annotations.SerializedName
 
-data class PlanetaryResponseList(
+data class CelestialBodyResponseList(
 @SerializedName("bodies")
-val bodies: List<Planet>?
+val bodies: List<CelestialBody>?
 )

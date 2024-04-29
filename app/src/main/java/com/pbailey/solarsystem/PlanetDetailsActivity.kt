@@ -27,7 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.google.gson.Gson
-import com.pbailey.network.Planet
+import com.pbailey.network.CelestialBody
 import com.pbailey.solarsystem.ui.theme.*
 import java.io.File
 
@@ -97,7 +97,7 @@ fun Background(data:String,context:Context) {
 
 @Composable
 fun PlanetCard(data:String,context:Context){
-    val planet = Gson().fromJson(data,Planet::class.java)
+    val planet = Gson().fromJson(data,CelestialBody::class.java)
     Card(shape = RoundedCornerShape(16.dp), modifier = Modifier
         .padding(16.dp)
         .fillMaxHeight()) {
@@ -123,32 +123,43 @@ fun PlanetCard(data:String,context:Context){
             } else if (planet.name.equals("Neptune")) {
                 imageId = R.drawable.neptune
             }
+
             val valoraxFamily = FontFamily(
                 Font(R.font.valorax_font_family, FontWeight.Normal),
             )
-            Box( modifier = Modifier
-                .fillMaxWidth()
-                .height(312.dp)) {
-            Image(
-                bitmap = ImageBitmap.imageResource(id = imageId), contentDescription = planet.name,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(312.dp), contentScale = ContentScale.FillBounds
-            )
-                Card(shape = RoundedCornerShape(12.dp), modifier = Modifier.width(72.dp).height(72.dp)
-                    .align(Alignment.BottomEnd).padding(8.dp)) {
+            if(imageId != -1) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(312.dp)
+                ) {
                     Image(
-                        painter = painterResource(id = R.drawable.augmented_reality_svgrepo_com),
-                        contentDescription = "View with AR",
-                        colorFilter = ColorFilter.tint(MainTextColor),
-                        modifier = Modifier.width(56.dp).height(56.dp).background(OrangeAccentColor).clickable {
-                            val sceneViewerIntent = Intent(context, ArActivity::class.java)
-                            sceneViewerIntent.putExtra("DATA", planet.name)
-                            context.startActivity(sceneViewerIntent)
-                        }
+                        bitmap = ImageBitmap.imageResource(id = imageId),
+                        contentDescription = planet.name,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(312.dp),
+                        contentScale = ContentScale.FillBounds
                     )
+                    Card(
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.width(72.dp).height(72.dp)
+                            .align(Alignment.BottomEnd).padding(8.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.augmented_reality_svgrepo_com),
+                            contentDescription = "View with AR",
+                            colorFilter = ColorFilter.tint(MainTextColor),
+                            modifier = Modifier.width(56.dp).height(56.dp)
+                                .background(OrangeAccentColor).clickable {
+                                val sceneViewerIntent = Intent(context, ArActivity::class.java)
+                                sceneViewerIntent.putExtra("DATA", planet.name)
+                                context.startActivity(sceneViewerIntent)
+                            }
+                        )
+                    }
                 }
-        }
+            }
             Text(text=planet.name, modifier = Modifier
                 .wrapContentHeight()
                 .fillMaxWidth()
@@ -159,10 +170,16 @@ fun PlanetCard(data:String,context:Context){
             val discoveredByLabel = "Discovered By: "
             val discoveryDateLabel = "Discovery Date: "
             var discoveredDate = "Unknown"
-            if(!planet.discoveredBy.equals(""))
-             discoverer = planet.discoveredBy
-            if(!planet.discoveryDate.equals(""))
-                discoveredDate = planet.discoveryDate
+            if(planet.discoveredBy != null ) {
+                if (!planet.discoveredBy.equals("")) {
+                    discoverer = planet.discoveredBy
+                }
+            }
+            if(planet.discoveredBy != null) {
+                if (!planet.discoveryDate.equals("")) {
+                    discoveredDate = planet.discoveryDate
+                }
+            }
                 Text(text=discoveredByLabel+discoverer, fontFamily = valoraxFamily, modifier = Modifier
                     .fillMaxHeight()
                     .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)

@@ -12,7 +12,13 @@ class SolarNetworkCalls {
     val solarApi = retrofit.create(SolarApi::class.java)
     //Below is a proper request to get the list of planets in our solar system
     //https://api.le-systeme-solaire.net/rest/bodies/?data=englishName,isPlanet?&filter[]=isPlanet,eq,true
-    fun getPlanet(): Call<PlanetaryResponseList> {
+    fun getPlanet(): Call<CelestialBodyResponseList> {
         return solarApi.getPlanets()
+    }
+    fun getMoons(): Call<CelestialBodyResponseList> {
+        return solarApi.getMoons()
+    }
+    fun getComets(): Call<CelestialBodyResponseList> {
+        return solarApi.getComets()
     }
 }

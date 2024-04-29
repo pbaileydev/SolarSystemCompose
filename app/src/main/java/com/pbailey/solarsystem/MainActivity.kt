@@ -36,16 +36,31 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import com.google.gson.Gson
-import com.pbailey.network.Planet
-import com.pbailey.network.PlanetaryResponseList
+import com.pbailey.network.CelestialBody
+import com.pbailey.network.CelestialBodyResponseList
 import com.pbailey.solarsystem.PlanetDetailsActivity
 import com.pbailey.solarsystem.ui.theme.*
 import com.pbailey.solarsystem.ui.theme.components.CassiniChip
+import com.pbailey.solarsystem.ui.theme.components.SwitchData
 import com.pbailey.solarsystem.ui.theme.components.ValoraxText
 import com.pbailey.solarsystem.utilities.valoraxFamily
 import kotlinx.coroutines.launch
 
-class MainActivity : ComponentActivity(), SolarViewModel.PlanetListInterface {
+class MainActivity : ComponentActivity(), SolarViewModel.PlanetListInterface, SwitchData{
+    override fun getData(data: String) {
+        solarViewModel.selectedChip = data
+        if(data.equals("Planets")){
+            solarViewModel.getPlanetData()
+        }
+        else if(data.equals("Moons")){
+            solarViewModel.getMoonData()
+        }
+        else{
+            solarViewModel.getCometData()
+        }
+    }
+    var switchData = this
+
     lateinit var solarViewModel: SolarViewModel
     var mContext: Context = this@MainActivity
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -161,9 +176,11 @@ class MainActivity : ComponentActivity(), SolarViewModel.PlanetListInterface {
                             color = BackgroundColor
                         ) {
 
-                            solarViewModel.getPlanetData()
+                            if(solarViewModel.isInitialLoad){
+                                solarViewModel.getPlanetData()
+                            }
                             var planetState = solarViewModel.planetState?.observeAsState(null)
-                            MainScreen(planetList = planetState?.value, mContext)
+                            MainScreen(planetList = planetState?.value, mContext, solarViewModel = solarViewModel,switchData=switchData)
                         }
                     }
                     // A surface container using the 'background' color from the theme
@@ -178,15 +195,28 @@ class MainActivity : ComponentActivity(), SolarViewModel.PlanetListInterface {
 
     }
 
-    override fun showPlanets(list: PlanetaryResponseList) {
+
+    override fun showPlanets(list: CelestialBodyResponseList) {
         Log.d("PlanetaryResponse", Gson().toJson(list))
         solarViewModel.setPlanetState(list)
         
     }
-}
+    override fun showMoons(list: CelestialBodyResponseList) {
+        Log.d("MoonsResponse", Gson().toJson(list))
+        solarViewModel.setPlanetState(list)
 
+    }
+
+    override fun showComets(list: CelestialBodyResponseList) {
+        Log.d("CometsResponse", Gson().toJson(list))
+        solarViewModel.setPlanetState(list)
+    }
+}
+private fun getMoonData(solarViewModel: SolarViewModel){
+    solarViewModel.getPlanetData()
+}
 @Composable
-fun MainScreen(planetList:PlanetaryResponseList?,context: Context){
+fun MainScreen(planetList:CelestialBodyResponseList?,context: Context, solarViewModel: SolarViewModel,switchData:SwitchData){
     if(planetList==null){
         return
     }
@@ -198,9 +228,9 @@ fun MainScreen(planetList:PlanetaryResponseList?,context: Context){
                 Row(modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight(), horizontalArrangement = Arrangement.SpaceEvenly){
-                    CassiniChip(text = "Planets", painterResource(id = R.drawable.planet_2_svgrepo_com))
-                    CassiniChip(text = "Moons", painterResource(id = R.drawable.moon_svgrepo_com))
-                    CassiniChip(text = "Satellites", painterResource(id = R.drawable.satellite_svgrepo_com))
+                    CassiniChip(text = "Planets", painterResource(id = R.drawable.planet_2_svgrepo_com), switchData = switchData,solarViewModel.selectedChip )
+                    CassiniChip(text = "Moons", painterResource(id = R.drawable.moon_svgrepo_com), switchData = switchData,solarViewModel.selectedChip)
+                    CassiniChip(text = "Comets", painterResource(id = R.drawable.satellite_svgrepo_com), switchData = switchData,solarViewModel.selectedChip)
                 }
                 Card(shape = RoundedCornerShape(12.dp),modifier = Modifier
                     .padding(10.dp)
@@ -250,7 +280,7 @@ fun Greeting(name: String) {
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun PlanetRow(planet: Planet, navigateToPlanet:()->Unit){
+fun PlanetRow(planet: CelestialBody, navigateToPlanet:()->Unit){
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -288,9 +318,14 @@ fun PlanetRow(planet: Planet, navigateToPlanet:()->Unit){
             Card(shape = RoundedCornerShape(15.dp), modifier = Modifier
                 .width(76.dp)
                 .padding(8.dp)) {
-                Image(bitmap = ImageBitmap.imageResource(id = imageId), contentDescription = planet.name,
-                    modifier = Modifier.fillMaxSize()
-                        , contentScale = ContentScale.Crop)
+                if(imageId != -1) {
+                    Image(
+                        bitmap = ImageBitmap.imageResource(id = imageId),
+                        contentDescription = planet.name,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
 
             }
             

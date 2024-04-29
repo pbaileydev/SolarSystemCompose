@@ -28,7 +28,7 @@ import com.google.ar.core.Frame
 import com.google.ar.core.Plane
 import com.google.ar.core.TrackingFailureReason
 import com.google.gson.Gson
-import com.pbailey.network.Planet
+import com.pbailey.network.CelestialBody
 import com.pbailey.solarsystem.ui.theme.SolarSystemTheme
 import io.github.sceneview.ar.ARScene
 import io.github.sceneview.ar.arcore.createAnchorOrNull

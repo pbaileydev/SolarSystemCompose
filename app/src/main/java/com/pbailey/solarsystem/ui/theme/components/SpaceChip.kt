@@ -18,11 +18,19 @@ import com.pbailey.solarsystem.ui.theme.MainTextColor
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun CassiniChip(text:String, painter: Painter) {
+fun CassiniChip(text:String, painter: Painter, switchData: SwitchData,selectedChip:String) {
     var selected by remember { mutableStateOf(false) }
+    var interfaceInstance = switchData
+    if(text.equals(selectedChip)){
+        selected = true
+    }
+    else{
+        selected = false
+    }
 
     FilterChip(
-        onClick = { selected = !selected },
+        onClick = { selected = !selected
+                  switchData.getData(text)},
         selected = selected,
         colors = ChipDefaults.filterChipColors(
             selectedBackgroundColor = LightPurpleColor,
@@ -55,4 +63,8 @@ fun CassiniChip(text:String, painter: Painter) {
         ValoraxText(text = text, style = MaterialTheme.typography.body2)
             
         }
+}
+
+interface SwitchData {
+    fun getData(data:String)
 }
